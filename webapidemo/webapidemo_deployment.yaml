@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: webapidemo
+  namespace: webapidemo
+  labels:
+    app: webapidemo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapidemo
+  template:
+    metadata:
+      labels:
+        app: webapidemo
+    spec:
+      containers:
+        - name: webapidemo
+          image: registry.pineapple.no-ip.biz:30004/test/test-docker-build
+        
+
+

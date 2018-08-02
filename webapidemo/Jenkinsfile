@@ -1,0 +1,45 @@
+podTemplate(label: 'golang-build', 
+	    containers: [ containerTemplate(name: 'docker', image: 'docker:1.12.6', ttyEnabled: true, command: 'cat'),
+			 containerTemplate(name: 'golang', image: 'golang:latest', ttyEnabled: true, command: 'cat'),
+                         containerTemplate(name: 'kubectl', image: 'registry.pineapple.no-ip.biz:30004/jenkins/kubectl', ttyEnabled: true, command: 'cat')],
+            volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
+) 
+{
+    node('golang-build') {
+	stage('Build golang binary') {
+	    checkout([
+		$class: 'GitSCM',
+		branches: scm.branches,
+		extensions: scm.extensions + 
+		    [[$class: 'CleanCheckout'] ,
+		     [$class: 'RelativeTargetDirectory', relativeTargetDir: 'src/httpserv']],
+		userRemoteConfigs: scm.userRemoteConfigs,
+	    ])
+	    
+	    container('golang') {
+		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/httpserv/httpserv httpserv'
+	    }
+	}
+
+	container('docker') {
+	    stage('Build Docker image') {
+		dir('src/httpserv'){
+		    sh "docker build -t test-docker-build ."
+		}
+	    }
+	    stage('Push to registriy') {
+		sh "docker tag test-docker-build registry.pineapple.no-ip.biz:30004/test/test-docker-build"
+		sh "docker push registry.pineapple.no-ip.biz:30004/test/test-docker-build"
+	    }
+	}
+	
+	container('kubectl') {
+	    stage('Deploy') {
+		dir('src/httpserv') {
+		    sh 'kubectl delete -f webapidemo_deployment.yaml'
+		    sh 'kubectl apply -f webapidemo_deployment.yaml'
+		}
+	    }
+	}
+    }
+}
