@@ -20,7 +20,7 @@ func main() {
 	cluster_port := fromEnv("CLUSTER_PORT", "30000")
 	keyspace := fromEnv("KEYSPACE", "imageapp")
 	signing_key := fromEnv("SIGNING_KEY", "1234567890")
-	signing_key_age := fromEnv("SIGNING_AGE", "3600")
+	signing_key_age := fromEnv("SIGNING_AGE", "86400")
 	sender_email := fromEnv("SENDER_EMAIL", "imagesharing392@gmail.com")
 	sender_pass := fromEnv("SENDER_PASS", "aybabtu1")
 
@@ -51,7 +51,8 @@ func main() {
 			session, error := cluster.CreateSession()
 			if error != nil {
 				fmt.Println(error)
-				os.Exit(1)
+				c.JSON(500, "Server is experiencing database connectivity issues.")
+				return
 			}
 			defer session.Close()
 
@@ -76,8 +77,11 @@ func main() {
 				return
 			}
 
-			fmt.Println("Spawning goroutine to handle email for " + email)
-			ctx.handleSendEmail(jwt, senderDetails, email)
+			fmt.Println("Formatting email")
+			formattedEmail := ctx.formatJwtEmail(jwt, senderDetails)
+
+			fmt.Println("Spawning email sender")
+			go sendFormattedEmail(formattedEmail)
 
 			c.JSON(200, gin.H{"login": ctx.email})
 		}
@@ -119,15 +123,6 @@ type LoginContext struct {
 	signing_age_secs int64
 }
 
-func (ctx LoginContext) handleSendEmail(jwt string, senderDetails SenderDetails, email string) {
-	fmt.Println("Sending email with jwt to " + email)
-	err := ctx.sendJwtEmail(jwt, senderDetails)
-	if err != nil {
-		fmt.Println("There was an error sending a login email to " + email)
-		return
-	}
-}
-
 func (c LoginContext) verifyEmail() bool {
 	perms := dao.GetUserPerms(c.session, c.email)
 	fmt.Printf("Permlen %v\n", len(perms))
@@ -149,11 +144,13 @@ type SenderDetails struct {
 	password string
 }
 
-func (c LoginContext) sendJwtEmail(jwt string, senderDetails SenderDetails) error {
-	// for k, v := range c.ghttp.Request.Header {
-	// 	fmt.Printf("Header: %v, Value: %v\n", k, v)
-	// }
+type FormattedEmail struct {
+	senderDetails SenderDetails
+	message       string
+	to_email      string
+}
 
+func (c LoginContext) formatJwtEmail(jwt string, senderDetails SenderDetails) FormattedEmail {
 	server_path_entry, has_server_path := c.ghttp.Request.Header["X-Request-Server"]
 	server_path := ""
 	if has_server_path {
@@ -168,11 +165,21 @@ func (c LoginContext) sendJwtEmail(jwt string, senderDetails SenderDetails) erro
 		"Subject: Login Information\n\n" +
 		body
 
-	err := smtp.SendMail("smtp.gmail.com:587",
-		smtp.PlainAuth("", senderDetails.from, senderDetails.password, "smtp.gmail.com"),
-		senderDetails.from, []string{c.email}, []byte(msg))
+	formatted_email := FormattedEmail{senderDetails, msg, c.email}
+	return formatted_email
+}
 
-	return err
+func sendFormattedEmail(email FormattedEmail) {
+	fmt.Println("Attempting to send email to " + email.to_email)
+	err := smtp.SendMail("smtp.gmail.com:587",
+		smtp.PlainAuth("", email.senderDetails.from, email.senderDetails.password, "smtp.gmail.com"),
+		email.senderDetails.from, []string{email.to_email}, []byte(email.message))
+
+	if err != nil {
+		fmt.Println("An error occured sending an email", err)
+	} else {
+		fmt.Println("Email successfully sent to " + email.to_email)
+	}
 }
 
 func fromEnv(variable string, defaultValue string) string {
