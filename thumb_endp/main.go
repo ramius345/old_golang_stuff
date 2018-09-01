@@ -50,5 +50,10 @@ func main() {
 		thumbnails.RThumbnails(cluster, c)
 	})
 
+	r.GET("/imagepath/:hash", func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		thumbnails.LookupFullImagePath(cluster, c)
+	})
+
 	r.Run(listen_port)
 }

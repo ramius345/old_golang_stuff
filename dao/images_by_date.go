@@ -56,3 +56,17 @@ func GetImagesAfterTime(session *gocql.Session, day time.Time, after time.Time, 
 	querystring := "select sha,imagedate from images_by_date where day=? and imagedate>? order by imagedate asc limit ?"
 	return getImages(session, day, after, max, querystring)
 }
+
+func GetImagePathFromHash(session *gocql.Session, hash string) (string, error) {
+	querystring := "select relpath,filename from images_by_sha where sha=? limit 1"
+	iter := session.Query(querystring, hash).Iter()
+	var relpath string
+	var filename string
+	iter.Scan(&relpath, &filename)
+
+	if err := iter.Close(); err != nil {
+		return "", err
+	} else {
+		return "/" + relpath + "/" + filename, nil
+	}
+}
