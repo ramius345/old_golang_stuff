@@ -19,7 +19,7 @@ func main() {
 	cluster_name := fromEnv("CLUSTER_NAME", "greengrape.pineapple.no-ip.biz")
 	cluster_port := fromEnv("CLUSTER_PORT", "30000")
 	keyspace := fromEnv("KEYSPACE", "imageapp")
-	signing_key := fromEnv("SIGNING_KEY", "1234567890")
+	signing_key := fromEnv("SIGNING_KEY", "yYTMYjyxvY5dv6luoRbZwkvy0NvFuYWIkPQlUUXHsAY=")
 	signing_key_age := fromEnv("SIGNING_AGE", "86400")
 	sender_email := fromEnv("SENDER_EMAIL", "imagesharing392@gmail.com")
 	sender_pass := fromEnv("SENDER_PASS", "aybabtu1")
