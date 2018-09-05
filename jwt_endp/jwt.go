@@ -80,6 +80,8 @@ func main() {
 			fmt.Println("Formatting email")
 			formattedEmail := ctx.formatJwtEmail(jwt, senderDetails)
 
+			fmt.Println("Formatted email for sender " + email + ":\n" + formattedEmail.message)
+
 			fmt.Println("Spawning email sender")
 			go sendFormattedEmail(formattedEmail)
 

@@ -74,41 +74,49 @@ func getDatabaseWriter(session *gocql.Session) ShaHandler {
 		dirpart := filepath.Dir(subpath)
 		filename := filepath.Base(subpath)
 
-		fmt.Println("Inserting relpath entry for " + subpath)
-		queryerr := session.Query("INSERT INTO relpaths (relpath) VALUES (?)",
-			dirpart).Exec()
+		//default to retrying.  Only do not retry if we get to the bottom of the loop
+		//without an error.
+		retry := true
+		count := 0
+		for retry {
+			duration := time.Duration(count) * time.Second
+			time.Sleep(duration)
+			count += 1
+			fmt.Println("Inserting date entry for " + subpath)
+			queryerr := session.Query("INSERT INTO images_by_date (day,imagedate,insertdate,sha) VALUES (?,?,?,?)",
+				modtime, modtime, time.Now(), shastring).Exec()
 
-		if queryerr != nil {
-			fmt.Println("Error inserting a relpath entry!")
-			fmt.Printf("%v\n", queryerr)
-		}
+			if queryerr == nil {
+				fmt.Println("Inserted date entry for " + subpath)
+			} else {
+				fmt.Printf("%s\n", queryerr)
+				fmt.Println("Retrying " + subpath)
+				continue
+			}
 
-		fmt.Println("Inserting date entry for " + subpath)
-		queryerr = session.Query("INSERT INTO images_by_date (day,imagedate,insertdate,sha) VALUES (?,?,?,?)",
-			modtime, modtime, time.Now(), shastring).Exec()
+			fmt.Println("Inserting into image_days table for " + subpath)
+			queryerr = session.Query("INSERT INTO image_days (force,day) VALUES (1,?)", modtime).Exec()
+			if queryerr == nil {
+				fmt.Println("Inserted image_days entry for " + subpath)
+			} else {
+				fmt.Printf("%s\n", queryerr)
+				fmt.Println("Retrying " + subpath)
+				continue
+			}
 
-		if queryerr == nil {
-			fmt.Println("Inserted date entry for " + subpath)
-		} else {
-			fmt.Printf("%s\n", queryerr)
-		}
+			fmt.Println("Inserting sha entry for " + subpath)
+			queryerr = session.Query("INSERT INTO images_by_sha (relpath,filename,imagedate,sha,insertdate) VALUES (?,?,?,?,?)",
+				dirpart, filename, modtime, shastring, time.Now()).Exec()
 
-		fmt.Println("Inserting into image_days table for " + subpath)
-		queryerr = session.Query("INSERT INTO image_days (force,day) VALUES (1,?)", modtime).Exec()
-		if queryerr == nil {
-			fmt.Println("Inserted image_days entry for " + subpath)
-		} else {
-			fmt.Printf("%s\n", queryerr)
-		}
+			if queryerr == nil {
+				fmt.Println("Inserted sha entry for " + subpath)
+			} else {
+				fmt.Printf("%s\n", queryerr)
+				fmt.Println("Retrying " + subpath)
+				continue
+			}
 
-		fmt.Println("Inserting sha entry for " + subpath)
-		queryerr = session.Query("INSERT INTO images_by_sha (relpath,filename,imagedate,sha,insertdate) VALUES (?,?,?,?,?)",
-			dirpart, filename, modtime, shastring, time.Now()).Exec()
-
-		if queryerr == nil {
-			fmt.Println("Inserted sha entry for " + subpath)
-		} else {
-			fmt.Printf("%s\n", queryerr)
+			retry = false
 		}
 	}
 	return writerfunc
@@ -132,7 +140,7 @@ func getShaString(sha Shadata) string {
 
 func main() {
 	fmt.Println("Connecting to database")
-	cluster := gocql.NewCluster("greengrape")
+	cluster := gocql.NewCluster("winredgrape.pineapple.no-ip.biz")
 	cluster.Port = 30000
 	cluster.Keyspace = "imageapp"
 	cluster.Consistency = gocql.Quorum
