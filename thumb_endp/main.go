@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
@@ -37,7 +38,9 @@ func main() {
 	cluster.Port = int(cluster_port_int)
 	cluster.Keyspace = keyspace
 	cluster.Consistency = gocql.Quorum
+	cluster.Timeout = time.Duration(5) * time.Second
 
+	fmt.Println("Timeout is : %v\n", cluster.Timeout)
 	r := gin.Default()
 	//get thumbnails in newest first order
 	r.GET("/thumbnails", func(c *gin.Context) {

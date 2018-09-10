@@ -82,6 +82,7 @@ func getDatabaseWriter(session *gocql.Session) ShaHandler {
 			duration := time.Duration(count) * time.Second
 			time.Sleep(duration)
 			count += 1
+
 			fmt.Println("Inserting date entry for " + subpath)
 			queryerr := session.Query("INSERT INTO images_by_date (day,imagedate,insertdate,sha) VALUES (?,?,?,?)",
 				modtime, modtime, time.Now(), shastring).Exec()
@@ -144,6 +145,7 @@ func main() {
 	cluster.Port = 30000
 	cluster.Keyspace = "imageapp"
 	cluster.Consistency = gocql.Quorum
+	cluster.Timeout = time.Duration(5) * time.Second
 	session, _ := cluster.CreateSession()
 	defer session.Close()
 

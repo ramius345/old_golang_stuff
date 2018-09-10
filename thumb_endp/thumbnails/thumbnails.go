@@ -1,6 +1,7 @@
 package thumbnails
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,7 @@ func Thumbnails(cluster *gocql.ClusterConfig, c *gin.Context) {
 	days, queryerr := dao.GetImageDays(session)
 	if queryerr != nil {
 		c.JSON(500, gin.H{"error": "An error occured making a days query"})
+		fmt.Printf("error: %v\n", queryerr)
 		return
 	}
 
