@@ -17,9 +17,9 @@ podTemplate(label: 'golang-build',
 	    ])
 	    
 	    container('golang') {
-		sh 'go get github.com/dgrijalva/jwt-go'
-		sh 'go get github.com/gin-gonic/gin'
-		sh 'go get github.com/gocql/gocql'
+		sh 'GOPATH=$(pwd) go get github.com/dgrijalva/jwt-go'
+		sh 'GOPATH=$(pwd) go get github.com/gin-gonic/gin'
+		sh 'GOPATH=$(pwd) go get github.com/gocql/gocql'
 		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/jwt_endp pineapple.no-ip.biz/jwt_endp'
 	    }
 	}
