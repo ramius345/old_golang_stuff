@@ -86,7 +86,7 @@ func main() {
 			//if it does, then load the image
 			img, err := readSourceImage(from_path)
 			if err != nil {
-				fmt.Println("Failed reading image from source path!")
+				fmt.Printf("Failed reading image from source path! %v\n", err)
 				continue
 			}
 
