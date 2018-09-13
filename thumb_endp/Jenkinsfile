@@ -1,0 +1,47 @@
+podTemplate(label: 'golang-build', 
+	    containers: [ containerTemplate(name: 'docker', image: 'docker:1.12.6', ttyEnabled: true, command: 'cat'),
+			 containerTemplate(name: 'golang', image: 'golang:latest', ttyEnabled: true, command: 'cat'),
+                         containerTemplate(name: 'kubectl', image: 'registry.pineapple.no-ip.biz:30004/jenkins/kubectl', ttyEnabled: true, command: 'cat')],
+            volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
+) 
+{
+    node('golang-build') {
+	stage('Build golang binary') {
+	    checkout([
+		$class: 'GitSCM',
+		branches: scm.branches,
+		extensions: scm.extensions + 
+		    [[$class: 'CleanCheckout'] ,
+		     [$class: 'RelativeTargetDirectory', relativeTargetDir: 'src/pineapple.no-ip.biz']],
+		userRemoteConfigs: scm.userRemoteConfigs,
+	    ])
+	    
+	    container('golang') {
+		sh 'GOPATH=$(pwd) go get github.com/gin-gonic/gin'
+		sh 'GOPATH=$(pwd) go get github.com/gocql/gocql'
+		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/thumb_endp/thumb_endp pineapple.no-ip.biz/thumb_endp'
+	    }
+	}
+
+	container('docker') {
+	    stage('Build Docker image') {
+		dir('src/pineapple.no-ip.biz/thumb_endp'){
+		    sh "docker build -t thumb_endp ."
+		}
+	    }
+	    stage('Push to registriy') {
+		sh "docker tag thumb_endp registry.pineapple.no-ip.biz:30004/imageapp/thumb_endp"
+		sh "docker push registry.pineapple.no-ip.biz:30004/imageapp/thumb_endp"
+	    }
+	}
+	
+	// container('kubectl') {
+	//     stage('Deploy') {
+	// 	dir('src/httpserv') {
+	// 	    sh 'kubectl delete -f webapidemo_deployment.yaml'
+	// 	    sh 'kubectl apply -f webapidemo_deployment.yaml'
+	// 	}
+	//     }
+	// }
+    }
+}
