@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: thumb_endp
+  namespace: imageapp
+  labels:
+    app: thumb_endp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: thumb_endp
+  template:
+    metadata:
+      labels:
+        app: thumb_endp
+    spec:
+      containers:
+        - name: webapidemo
+          image: registry.pineapple.no-ip.biz:30004/imageapp/thumb_endp:latest
+        
+
+

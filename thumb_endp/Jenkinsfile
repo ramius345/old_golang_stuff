@@ -35,13 +35,15 @@ podTemplate(label: 'golang-build',
 	    }
 	}
 	
-	// container('kubectl') {
-	//     stage('Deploy') {
-	// 	dir('src/httpserv') {
-	// 	    sh 'kubectl delete -f webapidemo_deployment.yaml'
-	// 	    sh 'kubectl apply -f webapidemo_deployment.yaml'
-	// 	}
-	//     }
-	// }
+	container('kubectl') {
+	    stage('Deploy') {
+		dir('src/pineapple.no-ip.biz/thumb_endp') {
+		    sh 'kubectl delete -f thumb_endp_deployment.yaml || true'
+		    sh 'kubectl apply -f thumb_endp_deployment.yaml'
+		    sh 'kubectl delete -f thumb_endp_service.yaml || true'
+		    sh 'kubectl apply -f thumb_endp_service.yaml'
+		}
+	    }
+	}
     }
 }

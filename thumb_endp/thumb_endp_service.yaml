@@ -1,0 +1,14 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: thumb_endp
+  namespace: imageapp
+spec:
+  selector:
+    app: jenkins
+  ports:
+  - name: http
+    protocol: TCP
+    port: 5555
+    targetPort: 5555
