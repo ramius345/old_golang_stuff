@@ -2,11 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: thumb_endp
+  name: thumb-endp
   namespace: imageapp
 spec:
   selector:
-    app: jenkins
+    app: thumb-endp
   ports:
   - name: http
     protocol: TCP
