@@ -89,12 +89,16 @@ func main() {
 		}
 	})
 
-	r.GET("/verify/:token", func(c *gin.Context) {
-		tokenString := c.Param("token")
+	r.GET("/verifytoken", func(c *gin.Context) {
+		//tokenString := c.Param("token")
+		tokenString := c.DefaultQuery("t", "")
 		skey := jwtverify.SigningKey{signing_key}
 		if valid, _ := skey.Verify(tokenString); valid {
 			c.SetCookie("auth_token", tokenString, 30000, "", "", false, false)
-			c.Redirect(302, "/")
+			c.Writer.Header().Add("Cache-Control", "max-age=0, no-cache, no-store, must-revalidate")
+			c.Writer.Header().Add("Pragma", "no-cache")
+			c.Writer.Header().Add("Expires", "0")
+			c.Redirect(303, "/")
 		} else {
 			c.JSON(401, gin.H{"error": "Unauthorized"})
 		}
@@ -159,7 +163,7 @@ func (c LoginContext) formatJwtEmail(jwt string, senderDetails SenderDetails) Fo
 		server_path = server_path_entry[0]
 	}
 
-	baseurl := server_path + "/verify/"
+	baseurl := server_path + "/verifytoken?t="
 	body := "Your Login Token: \n" + baseurl + jwt
 
 	msg := "From: " + senderDetails.from + "\n" +
