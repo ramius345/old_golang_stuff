@@ -89,9 +89,9 @@ func main() {
 		}
 	})
 
-	r.GET("/verifytoken", func(c *gin.Context) {
+	r.GET("/verify", func(c *gin.Context) {
 		//tokenString := c.Param("token")
-		tokenString := c.DefaultQuery("t", "")
+		tokenString := c.DefaultQuery("token", "")
 		skey := jwtverify.SigningKey{signing_key}
 		if valid, _ := skey.Verify(tokenString); valid {
 			c.SetCookie("auth_token", tokenString, 30000, "", "", false, false)
@@ -163,7 +163,7 @@ func (c LoginContext) formatJwtEmail(jwt string, senderDetails SenderDetails) Fo
 		server_path = server_path_entry[0]
 	}
 
-	baseurl := server_path + "/verifytoken?t="
+	baseurl := server_path + "/verify?token="
 	body := "Your Login Token: \n" + baseurl + jwt
 
 	msg := "From: " + senderDetails.from + "\n" +
