@@ -89,6 +89,22 @@ func main() {
 		}
 	})
 
+	r.POST("/verifytoken", func(c *gin.Context) {
+		//tokenString := c.Param("token")
+		tokenString := c.DefaultQuery("token", "")
+		skey := jwtverify.SigningKey{signing_key}
+		if valid, _ := skey.Verify(tokenString); valid {
+			c.SetCookie("auth_token", tokenString, 30000, "", "", false, false)
+			c.Writer.Header().Add("Cache-Control", "max-age=0, no-cache, no-store, must-revalidate, proxy-revalidate")
+			c.Writer.Header().Add("Pragma", "no-cache")
+			c.Writer.Header().Add("Expires", "Tue, 03 Jul 2001 06:00:00 GMT")
+			c.Redirect(303, "/")
+		} else {
+			c.JSON(401, gin.H{"error": "Unauthorized"})
+		}
+
+	})
+
 	r.GET("/verifytoken", func(c *gin.Context) {
 		//tokenString := c.Param("token")
 		tokenString := c.DefaultQuery("token", "")
