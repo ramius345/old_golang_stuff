@@ -44,17 +44,17 @@ func main() {
 	r := gin.Default()
 	//get thumbnails in newest first order
 	r.GET("/thumbnails", func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		//c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		thumbnails.Thumbnails(cluster, c)
 	})
 
 	r.GET("/rthumbnails", func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		//c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		thumbnails.RThumbnails(cluster, c)
 	})
 
 	r.GET("/imagepath/:hash", func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		//c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		thumbnails.LookupFullImagePath(cluster, c)
 	})
 
