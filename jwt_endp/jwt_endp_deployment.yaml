@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: jwt-endp
+  namespace: imageapp
+  labels:
+    app: jwt-endp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jwt-endp
+  template:
+    metadata:
+      labels:
+        app: jwt-endp
+    spec:
+      containers:
+        - name: thumb-endp
+          image: registry.pineapple.no-ip.biz:30004/imageapp/jwt_endp:latest
+        

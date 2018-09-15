@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jwt-endp
+  name: jwt-endp-ext
+  namespace: imageapp
+spec:
+  type: NodePort
+  ports:
+  - port: 5556
+    nodePort: 30101
+  selector:
+    app: jwt-endp
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jwt-endp
+  namespace: imageapp
+spec:
+  selector:
+    app: jwt-endp
+  ports:
+  - name: http
+    protocol: TCP
+    port: 5556
+    targetPort: 5556
