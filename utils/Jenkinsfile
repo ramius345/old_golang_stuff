@@ -27,7 +27,7 @@ podTemplate(label: 'golang-build',
 
 	container('docker') {
 	    stage('Build Docker image') {
-		dir('src/pineapple.no-ip.biz/imageapp'){
+		dir('src/pineapple.no-ip.biz/utils'){
 		    sh "docker build -t imageapp_db_tasks ."
 		}
 	    }
