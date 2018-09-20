@@ -19,7 +19,9 @@ podTemplate(label: 'golang-build',
 	    container('golang') {
 		sh 'GOPATH=$(pwd) go get github.com/gocql/gocql'
 		sh 'GOPATH=$(pwd) go get github.com/nfnt/resize'
-		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/jwt_endp/jwt_endp pineapple.no-ip.biz/jwt_endp'
+		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/imageapp/cleanup pineapple.no-ip.biz/imageapp/cleanup.go'
+		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/imageapp/filescan pineapple.no-ip.biz/imageapp/filescan.go'
+		sh 'GOPATH=$(pwd) CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o src/pineapple.no-ip.biz/imageapp/thumbnailer pineapple.no-ip.biz/imageapp/thumbnailer.go'
 	    }
 	}
 
