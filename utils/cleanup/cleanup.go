@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -96,12 +97,24 @@ func verifyImagesThread(filePathChannel chan Entry, cleanupChannel chan Entry) {
 	}
 }
 
+func checkFilesystemMounted(path string) {
+	fmt.Println("Ensuring that there are at least 10 images in the mount")
+	files, _ := ioutil.ReadDir(path)
+	filecount := len(files)
+	if filecount < 10 {
+		fmt.Println("Refusing to continue because there are less than 10 files")
+		os.Exit(1)
+	}
+}
+
 func main() {
 
 	db_url := "winredgrape.pineapple.no-ip.biz"
 	db_port := 30000
 	path_to_images := "/mnt/san/Pictures/Carolyn"
 	path_to_thumbnails := "/mnt/san/thumbnails"
+
+	checkFilesystemMounted(path_to_images)
 
 	fmt.Println("Connecting to database")
 	cluster := gocql.NewCluster(db_url)
