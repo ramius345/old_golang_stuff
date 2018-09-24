@@ -18,6 +18,11 @@ func scanDirectoryJpegs(path string) []string {
 	pathlen := len(path) + 1
 	fmt.Println("Doing walk")
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println("An error occured while walking %s\n", path)
+			return nil
+		}
+
 		if !info.IsDir() == true &&
 			(strings.HasSuffix(strings.ToLower(path), "jpg") ||
 				strings.HasSuffix(strings.ToLower(path), "jpeg")) {
